@@ -30,6 +30,7 @@
 //! making the primary output their original output.
 
 use std::mem;
+use std::num::NonZeroU16;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -135,6 +136,8 @@ enum MonitorSet<W: LayoutElement> {
 pub struct Options {
     /// Padding around windows in logical pixels.
     gaps: i32,
+    /// Rounding of the borders of windows in logical pixels.
+    rounding: Option<NonZeroU16>,
     /// Extra padding around the working area in logical pixels.
     struts: Struts,
     focus_ring: niri_config::FocusRing,
@@ -150,6 +153,7 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             gaps: 16,
+            rounding: None,
             struts: Default::default(),
             focus_ring: Default::default(),
             border: niri_config::default_border(),
@@ -189,6 +193,7 @@ impl Options {
 
         Self {
             gaps: layout.gaps.into(),
+            rounding: NonZeroU16::new(layout.rounding),
             struts: layout.struts,
             focus_ring: layout.focus_ring,
             border: layout.border,

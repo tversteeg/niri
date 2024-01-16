@@ -133,6 +133,10 @@ layout {
     // Set gaps around windows in logical pixels.
     gaps 16
 
+    // Set the rounding radius of the edges of windows in logical pixels.
+    // Disabled when value is 0.
+    rounding 0
+
     // Struts shrink the area occupied by windows, similarly to layer-shell panels.
     // You can think of them as a kind of outer gaps. They are set in logical pixels.
     // Left and right struts will cause the next window to the side to always be visible.

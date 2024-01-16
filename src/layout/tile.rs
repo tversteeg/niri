@@ -8,6 +8,8 @@ use smithay::backend::renderer::element::Kind;
 use smithay::backend::renderer::{ImportAll, Renderer};
 use smithay::utils::{Logical, Point, Rectangle, Scale, Size};
 
+use crate::rounding::RoundingShader;
+
 use super::focus_ring::FocusRing;
 use super::workspace::WorkspaceRenderElement;
 use super::{LayoutElement, Options};

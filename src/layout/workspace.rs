@@ -18,6 +18,8 @@ use super::focus_ring::{FocusRing, FocusRingRenderElement};
 use super::tile::Tile;
 use super::{LayoutElement, Options};
 use crate::animation::Animation;
+use crate::render_helpers::AsGlesRenderer;
+use crate::rounding::{RoundingRenderElement, RoundingShader};
 use crate::utils::output_size;
 
 #[derive(Debug)]
@@ -85,6 +87,7 @@ render_elements! {
     Wayland = WaylandSurfaceRenderElement<R>,
     FocusRing = FocusRingRenderElement,
     Border = RelocateRenderElement<FocusRingRenderElement>,
+    Rounding = RoundingRenderElement,
 }
 
 /// Width of a column.
@@ -1075,7 +1078,7 @@ impl Workspace<Window> {
         }
     }
 
-    pub fn render_elements<R: Renderer + ImportAll>(
+    pub fn render_elements<R: Renderer + ImportAll + AsGlesRenderer>(
         &self,
         renderer: &mut R,
     ) -> Vec<WorkspaceRenderElement<R>>
@@ -1107,6 +1110,15 @@ impl Workspace<Window> {
 
         // Draw the window itself.
         rv.extend(active_tile.render(renderer, tile_pos, output_scale));
+
+        // Draw the shader for the window rounding if set.
+        if let Some(radius) = self.options.rounding {
+            rv.push(WorkspaceRenderElement::Rounding(RoundingShader::element(
+                renderer.as_gles_renderer(),
+                active_tile.window(),
+                radius,
+            )));
+        }
 
         // Draw the focus ring.
         rv.extend(self.focus_ring.render(output_scale).map(Into::into));

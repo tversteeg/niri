@@ -23,6 +23,7 @@ use smithay::backend::renderer::element::{
     default_primary_scanout_output_compare, AsRenderElements, Element, Id, Kind, RenderElement,
     RenderElementStates, UnderlyingStorage,
 };
+use smithay::backend::renderer::gles::element::PixelShaderElement;
 use smithay::backend::renderer::gles::{
     GlesError, GlesFrame, GlesMapping, GlesRenderer, GlesTexture,
 };
@@ -2845,6 +2846,7 @@ fn render_to_dmabuf(
 pub enum OutputRenderElements<R: NiriRenderer> {
     Monitor(MonitorRenderElement<R>),
     Wayland(WaylandSurfaceRenderElement<R>),
+    Shader(PixelShaderElement),
     NamedPointer(PrimaryGpuTextureRenderElement),
     SolidColor(SolidColorRenderElement),
     ScreenshotUi(ScreenshotUiRenderElement),
@@ -2856,6 +2858,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.id(),
             Self::Wayland(elem) => elem.id(),
+            Self::Shader(elem) => elem.id(),
             Self::NamedPointer(elem) => elem.id(),
             Self::SolidColor(elem) => elem.id(),
             Self::ScreenshotUi(elem) => elem.id(),
@@ -2867,6 +2870,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.current_commit(),
             Self::Wayland(elem) => elem.current_commit(),
+            Self::Shader(elem) => elem.current_commit(),
             Self::NamedPointer(elem) => elem.current_commit(),
             Self::SolidColor(elem) => elem.current_commit(),
             Self::ScreenshotUi(elem) => elem.current_commit(),
@@ -2878,6 +2882,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.geometry(scale),
             Self::Wayland(elem) => elem.geometry(scale),
+            Self::Shader(elem) => elem.geometry(scale),
             Self::NamedPointer(elem) => elem.geometry(scale),
             Self::SolidColor(elem) => elem.geometry(scale),
             Self::ScreenshotUi(elem) => elem.geometry(scale),
@@ -2889,6 +2894,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.transform(),
             Self::Wayland(elem) => elem.transform(),
+            Self::Shader(elem) => elem.transform(),
             Self::NamedPointer(elem) => elem.transform(),
             Self::SolidColor(elem) => elem.transform(),
             Self::ScreenshotUi(elem) => elem.transform(),
@@ -2900,6 +2906,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.src(),
             Self::Wayland(elem) => elem.src(),
+            Self::Shader(elem) => elem.src(),
             Self::NamedPointer(elem) => elem.src(),
             Self::SolidColor(elem) => elem.src(),
             Self::ScreenshotUi(elem) => elem.src(),
@@ -2915,6 +2922,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.damage_since(scale, commit),
             Self::Wayland(elem) => elem.damage_since(scale, commit),
+            Self::Shader(elem) => elem.damage_since(scale, commit),
             Self::NamedPointer(elem) => elem.damage_since(scale, commit),
             Self::SolidColor(elem) => elem.damage_since(scale, commit),
             Self::ScreenshotUi(elem) => elem.damage_since(scale, commit),
@@ -2926,6 +2934,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.opaque_regions(scale),
             Self::Wayland(elem) => elem.opaque_regions(scale),
+            Self::Shader(elem) => elem.opaque_regions(scale),
             Self::NamedPointer(elem) => elem.opaque_regions(scale),
             Self::SolidColor(elem) => elem.opaque_regions(scale),
             Self::ScreenshotUi(elem) => elem.opaque_regions(scale),
@@ -2937,6 +2946,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.alpha(),
             Self::Wayland(elem) => elem.alpha(),
+            Self::Shader(elem) => elem.alpha(),
             Self::NamedPointer(elem) => elem.alpha(),
             Self::SolidColor(elem) => elem.alpha(),
             Self::ScreenshotUi(elem) => elem.alpha(),
@@ -2948,6 +2958,7 @@ impl<R: NiriRenderer> Element for OutputRenderElements<R> {
         match self {
             Self::Monitor(elem) => elem.kind(),
             Self::Wayland(elem) => elem.kind(),
+            Self::Shader(elem) => elem.kind(),
             Self::NamedPointer(elem) => elem.kind(),
             Self::SolidColor(elem) => elem.kind(),
             Self::ScreenshotUi(elem) => elem.kind(),
@@ -2967,6 +2978,7 @@ impl RenderElement<GlesRenderer> for OutputRenderElements<GlesRenderer> {
         match self {
             Self::Monitor(elem) => elem.draw(frame, src, dst, damage),
             Self::Wayland(elem) => elem.draw(frame, src, dst, damage),
+            Self::Shader(elem) => elem.draw(frame, src, dst, damage),
             Self::NamedPointer(elem) => {
                 RenderElement::<GlesRenderer>::draw(&elem, frame, src, dst, damage)
             }
@@ -2984,6 +2996,7 @@ impl RenderElement<GlesRenderer> for OutputRenderElements<GlesRenderer> {
         match self {
             Self::Monitor(elem) => elem.underlying_storage(renderer),
             Self::Wayland(elem) => elem.underlying_storage(renderer),
+            Self::Shader(elem) => elem.underlying_storage(renderer),
             Self::NamedPointer(elem) => elem.underlying_storage(renderer),
             Self::SolidColor(elem) => elem.underlying_storage(renderer),
             Self::ScreenshotUi(elem) => elem.underlying_storage(renderer),
@@ -3005,6 +3018,9 @@ impl<'render, 'alloc> RenderElement<TtyRenderer<'render, 'alloc>>
         match self {
             Self::Monitor(elem) => elem.draw(frame, src, dst, damage),
             Self::Wayland(elem) => elem.draw(frame, src, dst, damage),
+            Self::Shader(elem) => elem
+                .draw(frame.as_mut(), src, dst, damage)
+                .map_err(TtyRendererError::Render),
             Self::NamedPointer(elem) => {
                 RenderElement::<TtyRenderer<'render, 'alloc>>::draw(&elem, frame, src, dst, damage)
             }
@@ -3025,6 +3041,7 @@ impl<'render, 'alloc> RenderElement<TtyRenderer<'render, 'alloc>>
         match self {
             Self::Monitor(elem) => elem.underlying_storage(renderer),
             Self::Wayland(elem) => elem.underlying_storage(renderer),
+            Self::Shader(elem) => elem.underlying_storage(renderer.as_mut()),
             Self::NamedPointer(elem) => elem.underlying_storage(renderer),
             Self::SolidColor(elem) => elem.underlying_storage(renderer),
             Self::ScreenshotUi(elem) => elem.underlying_storage(renderer),

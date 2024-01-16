@@ -14,6 +14,7 @@ mod ipc;
 mod layout;
 mod niri;
 mod render_helpers;
+mod rounding;
 mod screenshot_ui;
 mod utils;
 mod watcher;

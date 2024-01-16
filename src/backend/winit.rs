@@ -20,6 +20,8 @@ use smithay::utils::Transform;
 
 use super::RenderResult;
 use crate::niri::{RedrawState, State};
+use crate::render_helpers::AsGlesRenderer;
+use crate::rounding::RoundingShader;
 use crate::utils::get_monotonic_time;
 use crate::Niri;
 
@@ -133,6 +135,8 @@ impl Winit {
             warn!("error binding renderer wl_display: {err}");
         }
 
+        RoundingShader::init(self.backend.renderer().as_gles_renderer());
+
         niri.add_output(self.output.clone(), None);
     }
 
@@ -204,6 +208,8 @@ impl Winit {
         if output_state.unfinished_animations_remain {
             self.backend.window().request_redraw();
         }
+
+        RoundingShader::cleanup(self.backend.renderer().as_gles_renderer());
 
         rv
     }

@@ -16,6 +16,7 @@ use super::workspace::{
 };
 use super::{LayoutElement, Options};
 use crate::animation::Animation;
+use crate::render_helpers::AsGlesRenderer;
 use crate::utils::output_size;
 
 #[derive(Debug)]
@@ -581,7 +582,7 @@ impl<W: LayoutElement> Monitor<W> {
 }
 
 impl Monitor<Window> {
-    pub fn render_elements<R: Renderer + ImportAll>(
+    pub fn render_elements<R: Renderer + ImportAll + AsGlesRenderer>(
         &self,
         renderer: &mut R,
     ) -> Vec<MonitorRenderElement<R>>
