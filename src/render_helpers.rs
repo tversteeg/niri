@@ -10,7 +10,6 @@ use smithay::backend::renderer::{
 use smithay::utils::{Buffer, Physical, Rectangle, Scale, Transform};
 
 use crate::backend::tty::{TtyFrame, TtyRenderer, TtyRendererError};
-use crate::rounding::RoundingRenderElement;
 
 /// Trait with our main renderer requirements to save on the typing.
 pub trait NiriRenderer:
@@ -170,7 +169,7 @@ impl<'render, 'alloc> RenderElement<TtyRenderer<'render, 'alloc>>
 }
 
 /// Wrapper for a pixel shader.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PixelShaderRenderElement(pub PixelShaderElement);
 
 impl Element for PixelShaderRenderElement {

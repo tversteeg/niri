@@ -1,30 +1,23 @@
-use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::iter::zip;
 use std::num::NonZeroU16;
 
-use arrayvec::ArrayVec;
-use niri_config::{self, Color};
-use smithay::backend::renderer::element::solid::{SolidColorBuffer, SolidColorRenderElement};
-use smithay::backend::renderer::element::surface::WaylandSurfaceRenderElement;
 use smithay::backend::renderer::element::{Element, Kind};
 use smithay::backend::renderer::gles::element::PixelShaderElement;
 use smithay::backend::renderer::gles::{
     GlesPixelProgram, GlesRenderer, Uniform, UniformName, UniformType,
 };
-use smithay::backend::renderer::Renderer;
 use smithay::desktop::Window;
-use smithay::utils::{IsAlive, Logical, Point, Scale, Size};
+use smithay::utils::IsAlive;
 
-use crate::render_helpers::{AsGlesRenderer, NiriRenderer, PixelShaderRenderElement};
+use crate::render_helpers::PixelShaderRenderElement;
 
 #[derive(Debug)]
 pub struct RoundingShader {
     shader: GlesPixelProgram,
 }
 
-struct RoundingShaderElements(RefCell<HashMap<Window, PixelShaderElement>>);
+struct RoundingShaderElements(RefCell<HashMap<Window, PixelShaderRenderElement>>);
 
 pub type RoundingRenderElement = PixelShaderRenderElement;
 
@@ -71,19 +64,19 @@ impl RoundingShader {
 
         if let Some(elem) = elements.get_mut(window) {
             if elem.geometry(1.0.into()).to_logical(1) != window.bbox() {
-                elem.resize(window.bbox(), None);
+                elem.0.resize(window.bbox(), None);
             }
 
             elem.clone()
         } else {
-            let elem = PixelShaderElement::new(
+            let elem = PixelShaderRenderElement(PixelShaderElement::new(
                 Self::get(renderer).shader.clone(),
                 window.bbox(),
                 None,
                 1.0,
                 vec![Uniform::new("radius", radius.get() as f32)],
                 Kind::Unspecified,
-            );
+            ));
             elements.insert(window.clone(), elem.clone());
             elem
         }

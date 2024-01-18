@@ -49,9 +49,8 @@ use smithay::wayland::shell::xdg::SurfaceCachedState;
 
 pub use self::monitor::MonitorRenderElement;
 use self::monitor::{Monitor, WorkspaceSwitch, WorkspaceSwitchGesture};
-use self::workspace::{
-    compute_working_area, Column, ColumnWidth, OutputId, Workspace, WorkspaceRenderElement,
-};
+pub use self::workspace::WorkspaceRenderElement;
+use self::workspace::{compute_working_area, Column, ColumnWidth, OutputId, Workspace};
 use crate::animation::Animation;
 use crate::utils::output_size;
 
