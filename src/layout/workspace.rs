@@ -16,6 +16,7 @@ use super::{LayoutElement, Options};
 use crate::animation::Animation;
 use crate::niri_render_elements;
 use crate::render_helpers::NiriRenderer;
+use crate::rounding::{RoundingRenderElement, RoundingShader};
 use crate::utils::output_size;
 
 #[derive(Debug)]
@@ -81,6 +82,7 @@ niri_render_elements! {
     WorkspaceRenderElement => {
         Tile = TileRenderElement<R>,
         FocusRing = FocusRingRenderElement,
+        Rounding = RoundingRenderElement,
     }
 }
 
@@ -1131,7 +1133,9 @@ impl<W: LayoutElement> Workspace<W> {
 
         self.columns[self.active_column_idx].is_fullscreen
     }
+}
 
+impl Workspace<Window> {
     pub fn render_elements<R: NiriRenderer>(
         &self,
         renderer: &mut R,
@@ -1152,6 +1156,15 @@ impl<W: LayoutElement> Workspace<W> {
         let mut first = true;
 
         for (tile, tile_pos) in self.tiles_in_render_order() {
+            // Draw the shader for the window rounding if set.
+            if let Some(radius) = self.options.rounding {
+                rv.push(WorkspaceRenderElement::Rounding(RoundingShader::element(
+                    renderer.as_gles_renderer(),
+                    tile.window(),
+                    radius,
+                )));
+            }
+
             // Draw the window itself.
             rv.extend(
                 tile.render(renderer, tile_pos, output_scale)
@@ -1167,9 +1180,7 @@ impl<W: LayoutElement> Workspace<W> {
 
         rv
     }
-}
 
-impl Workspace<Window> {
     pub fn refresh(&self, is_active: bool) {
         let bounds = self.toplevel_bounds();
 

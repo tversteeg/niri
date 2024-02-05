@@ -286,6 +286,8 @@ pub struct Layout {
     pub center_focused_column: CenterFocusedColumn,
     #[knuffel(child, unwrap(argument), default = 16)]
     pub gaps: u16,
+    #[knuffel(child, unwrap(argument), default = 0)]
+    pub rounding: u16,
     #[knuffel(child, default)]
     pub struts: Struts,
 }

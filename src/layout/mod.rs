@@ -31,6 +31,7 @@
 
 use std::cmp::min;
 use std::mem;
+use std::num::NonZeroU16;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -147,6 +148,8 @@ enum MonitorSet<W: LayoutElement> {
 pub struct Options {
     /// Padding around windows in logical pixels.
     pub gaps: i32,
+    /// Rounding of the borders of windows in logical pixels.
+    pub rounding: Option<NonZeroU16>,
     /// Extra padding around the working area in logical pixels.
     pub struts: Struts,
     pub focus_ring: niri_config::FocusRing,
@@ -162,6 +165,7 @@ impl Default for Options {
     fn default() -> Self {
         Self {
             gaps: 16,
+            rounding: None,
             struts: Default::default(),
             focus_ring: Default::default(),
             border: niri_config::default_border(),
@@ -180,6 +184,8 @@ impl Options {
     fn from_config(config: &Config) -> Self {
         let layout = &config.layout;
         let preset_column_widths = &layout.preset_column_widths;
+
+        let rounding = NonZeroU16::new(layout.rounding);
 
         let preset_widths = if preset_column_widths.is_empty() {
             Options::default().preset_widths
@@ -205,6 +211,7 @@ impl Options {
             focus_ring: layout.focus_ring,
             border: layout.border,
             center_focused_column: layout.center_focused_column,
+            rounding,
             preset_widths,
             default_width,
         }

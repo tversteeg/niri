@@ -50,6 +50,7 @@ use super::RenderResult;
 use crate::frame_clock::FrameClock;
 use crate::niri::{Niri, RedrawState, State};
 use crate::render_helpers::AsGlesRenderer;
+use crate::rounding::RoundingShader;
 use crate::utils::get_monotonic_time;
 
 const SUPPORTED_COLOR_FORMATS: &[Fourcc] = &[Fourcc::Argb8888, Fourcc::Abgr8888];

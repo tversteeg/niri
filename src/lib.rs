@@ -17,6 +17,7 @@ pub mod layout;
 pub mod niri;
 pub mod protocols;
 pub mod render_helpers;
+pub mod rounding;
 pub mod screenshot_ui;
 pub mod utils;
 pub mod watcher;
